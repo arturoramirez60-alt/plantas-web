@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="page-main">
+    <section class="page-heading"><p class="eyebrow"><span class="eyebrow-line"></span> Tu espacio de cultivo</p><h1>Mis plantas<span class="brand-dot">.</span></h1><p>Guarda tus avances y vuelve a los pasos de cuidado cuando quieras.</p></section>
+    {% if items %}
+    <div class="plants-list">
+        {% for item in items %}
+        <details class="plant-guide" data-guide="{{ item.id }}">
+            <summary><span class="plant-number">{{ "%02d"|format(loop.index) }}</span><span class="plant-title"><strong>{{ item.seed.name }}</strong><small>{{ item.seed.category }} · {{ kit_labels[item.kit_type] }} · Pedido #{{ item.order.id }}</small></span><span class="plant-date">{{ item.order.created_at.strftime("%d/%m/%Y") }}</span><span class="summary-chevron" aria-hidden="true">+</span></summary>
+            <div class="plant-guide-content"><p>Maceta recomendada: {{ item.seed.pot_size }}. Sigue estos pasos de siembra, riego y cosecha:</p><ol>{% for step in item.seed.guide_steps %}<li><label><input type="checkbox" data-guide-step="{{ item.id }}-{{ loop.index }}"><span>{{ step }}</span></label></li>{% endfor %}</ol></div>
+        </details>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><h2>Tu primer cultivo empieza con una semilla.</h2><p>Cuando confirmes un pedido, aquí aparecerá su guía personalizada.</p><a class="button button-dark" href="{{ url_for('catalog') }}">Elegir un kit <span aria-hidden="true">↗</span></a></div>
+    {% endif %}
+</main>
+{% endblock %}

@@ -1,13 +1,29 @@
-# GitHub Codespaces ♥️ Flask
+# Raíz
 
-Welcome to your shiny new Codespace running Flask! We've got everything fired up and running for you to explore Flask.
+Tienda y comunidad para huertos urbanos, construida con Flask, Flask-SQLAlchemy, Flask-Login, Jinja2, CSS, JavaScript nativo y Leaflet.
 
-You've got a blank canvas to work on from a git perspective as well. There's a single initial commit with the what you're seeing right now - where you go from here is up to you!
+## Ejecutar
 
-Everything you do here is contained within this one codespace. There is no repository on GitHub yet. If and when you’re ready you can click "Publish Branch" and we’ll create your repository and push up your project. If you were just exploring then and have no further need for this code then you can simply delete your codespace and it's gone forever.
-
-To run this application:
-
+```bash
+python -m pip install -r requirements.txt
+flask --app app run --debug
 ```
-flask --debug run
-```
+
+La aplicación crea `database.db` y carga cinco semillas y tres cuentas demo al arrancar por primera vez. Para despliegues, configura `SECRET_KEY` con un valor secreto propio.
+
+## Cuentas demo
+
+Las tres cuentas comparten la contraseña `raizdemo`:
+
+- `sofia@raiz.demo`
+- `mateo@raiz.demo`
+- `lucia@raiz.demo`
+
+## Funciones
+
+- Catálogo filtrable y kits Inicio, Recarga y Solo Semillas con precios calculados por variedad.
+- Carrito guardado en la sesión y checkout que persiste pedidos para usuarios autenticados.
+- Guías por cultivo en “Mis plantas”, con pasos marcables que se guardan en el navegador.
+- Mapa de comunidad con ubicaciones y plantas compradas; los perfiles aparecen solo con consentimiento.
+
+El checkout guarda el pedido, pero no procesa pagos. La base local se crea automáticamente y está excluida de Git.

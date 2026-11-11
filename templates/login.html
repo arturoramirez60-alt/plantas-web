@@ -1,0 +1,4 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="page-main auth-page"><section class="auth-panel"><p class="eyebrow"><span class="eyebrow-line"></span> Qué bueno tenerte de vuelta</p><h1>Entra a tu huerto.</h1><form method="post" class="stacked-form"><label>Correo electrónico<input type="email" name="email" autocomplete="email" required></label><label>Contraseña<input type="password" name="password" autocomplete="current-password" required></label><button class="button button-dark" type="submit">Iniciar sesión <span aria-hidden="true">↗</span></button></form><p class="auth-switch">¿Todavía no tienes cuenta? <a href="{{ url_for('register') }}">Crear una cuenta</a></p><p class="demo-note">Cuenta de prueba: sofia@raiz.demo · contraseña: raizdemo</p></section></main>
+{% endblock %}

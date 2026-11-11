@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="page-main catalog-page">
+    <section class="page-heading">
+        <p class="eyebrow"><span class="eyebrow-line"></span> Cultiva a tu manera</p>
+        <h1>Semillas para echar <em>raíces.</em></h1>
+        <p>Elige una variedad y arma el kit que se adapta a tu espacio y experiencia.</p>
+    </section>
+    <div class="filter-bar" role="group" aria-label="Filtrar por tipo de producto">
+        <button class="filter-button is-active" type="button" data-catalog-filter="all">Todo</button>
+        <button class="filter-button" type="button" data-catalog-filter="starter">Kits inicio</button>
+        <button class="filter-button" type="button" data-catalog-filter="refill">Kits recarga</button>
+        <button class="filter-button" type="button" data-catalog-filter="seed_only">Semillas</button>
+    </div>
+    <div class="catalog-grid">
+    {% for seed in seeds %}
+        {% for kind in kit_types %}
+        {% set kit = kit_breakdown(seed, kind) %}
+        <article class="catalog-card" data-catalog-item data-kind="{{ kind }}">
+            <div class="catalog-card-top"><span class="seed-category">{{ seed.category }}</span><span class="seed-pot">{{ seed.pot_size }}</span></div>
+            <p class="product-meta">SEMILLA {{ "%02d"|format(seed.id) }} / {{ seed.category|upper }}</p>
+            <h2>{{ seed.name }}</h2>
+            <p class="catalog-description">{{ kit["items"]|join(" · ") }}</p>
+            <ul class="kit-includes">{% for include in kit["items"] %}<li>{{ include }}</li>{% endfor %}</ul>
+            <div class="catalog-card-bottom">
+                <div><span class="kind-label">{{ kit["label"] }}</span><strong class="price">${{ "{:,}".format(kit["price"]) }} <small>MXN</small></strong></div>
+                <form action="{{ url_for('add_to_cart') }}" method="post">
+                    <input type="hidden" name="seed_id" value="{{ seed.id }}"><input type="hidden" name="kit_type" value="{{ kind }}"><input type="hidden" name="next" value="{{ url_for('catalog') }}">
+                    <button class="button button-dark" type="submit">Añadir <span aria-hidden="true">+</span></button>
+                </form>
+            </div>
+        </article>
+        {% endfor %}
+    {% endfor %}
+    </div>
+    <p class="catalog-empty" data-catalog-empty hidden>No hay productos en este filtro.</p>
+</main>
+{% endblock %}
