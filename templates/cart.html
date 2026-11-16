@@ -4,19 +4,20 @@
     <section class="page-heading compact-heading"><p class="eyebrow"><span class="eyebrow-line"></span> Lo que va a crecer</p><h1>Tu carrito.</h1></section>
     {% if items %}
     <form action="{{ url_for('cart') }}" method="post" class="cart-form">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <div class="cart-list">
         {% for item in items %}
             <article class="cart-row">
                 <div class="cart-item-copy"><span class="seed-category">{{ item.seed.category }}</span><h2>{{ item.seed.name }}</h2><p>{{ item.kit["label"] }} · {{ item.kit["items"]|join(" · ") }}</p></div>
                 <label class="quantity-field">Cantidad<input type="number" min="0" max="20" name="quantity_{{ item.seed.id }}_{{ item.kit_type }}" value="{{ item.quantity }}" aria-label="Cantidad de {{ item.seed.name }}"></label>
-                <strong class="cart-line-price">${{ "{:,}".format(item.line_total) }} <small>MXN</small></strong>
+                <strong class="cart-line-price">{% if demo_mode %}Gratis{% else %}${{ "{:,}".format(item.line_total) }} <small>MXN</small>{% endif %}</strong>
                 <button class="remove-button" type="submit" form="remove-{{ loop.index }}" aria-label="Eliminar {{ item.seed.name }}">Eliminar</button>
             </article>
         {% endfor %}
         </div>
-        <div class="cart-summary"><button class="text-button" type="submit">Actualizar cantidades</button><div class="summary-total"><span>Total</span><strong>${{ "{:,}".format(total) }} <small>MXN</small></strong></div><a class="button button-dark" href="{{ url_for('checkout') }}">Continuar al checkout <span aria-hidden="true">↗</span></a></div>
+        <div class="cart-summary"><button class="text-button" type="submit">Actualizar cantidades</button><div class="summary-total"><span>Total</span><strong>{% if demo_mode %}Gratis{% else %}${{ "{:,}".format(total) }} <small>MXN</small>{% endif %}</strong></div><a class="button button-dark" href="{{ url_for('checkout') }}">Continuar al checkout <span aria-hidden="true">↗</span></a></div>
     </form>
-    {% for item in items %}{% set item_index = loop.index %}<form id="remove-{{ item_index }}" action="{{ url_for('remove_from_cart', seed_id=item.seed.id, kit_type=item.kit_type) }}" method="post"></form>{% endfor %}
+    {% for item in items %}{% set item_index = loop.index %}<form id="remove-{{ item_index }}" action="{{ url_for('remove_from_cart', seed_id=item.seed.id, kit_type=item.kit_type) }}" method="post"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"></form>{% endfor %}
     {% else %}
     <div class="empty-state"><h2>Tu carrito está esperando semillas.</h2><p>Encuentra una variedad para empezar tu próximo huerto.</p><a class="button button-dark" href="{{ url_for('catalog') }}">Explorar catálogo <span aria-hidden="true">↗</span></a></div>
     {% endif %}

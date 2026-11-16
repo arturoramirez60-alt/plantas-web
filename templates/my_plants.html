@@ -2,6 +2,12 @@
 {% block content %}
 <main class="page-main">
     <section class="page-heading"><p class="eyebrow"><span class="eyebrow-line"></span> Tu espacio de cultivo</p><h1>Mis plantas<span class="brand-dot">.</span></h1><p>Guarda tus avances y vuelve a los pasos de cuidado cuando quieras.</p></section>
+    <section class="my-gardens">
+        <div class="section-heading"><div><p class="eyebrow"><span class="eyebrow-line"></span> Comunidad</p><h2>Mis huertos.</h2></div><a class="text-link" href="{{ url_for('new_garden') }}">Registrar huerto <span aria-hidden="true">↗</span></a></div>
+        {% if gardens %}
+        <ul class="my-garden-list">{% for garden in gardens %}<li><a href="{{ url_for('garden_profile', garden_id=garden.id) }}">{{ garden.name }}</a><span>{% if garden.visible_map %}Visible en el mapa{% else %}Privado{% endif %}</span></li>{% endfor %}</ul>
+        {% else %}<p class="form-help">Aún no has registrado huertos. Puedes mantenerlos privados o compartirlos con la comunidad.</p>{% endif %}
+    </section>
     {% if items %}
     <div class="plants-list">
         {% for item in items %}

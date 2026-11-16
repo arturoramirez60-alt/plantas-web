@@ -13,7 +13,7 @@
     {% block head_extra %}{% endblock %}
 </head>
 <body>
-    <div class="announcement">Un pequeño jardín empieza aquí <span aria-hidden="true">·</span> Envío gratis desde $1,200 MXN</div>
+    <div class="announcement">{% if demo_mode %}Modo de prueba: todos los kits son gratis{% else %}Un pequeño jardín empieza aquí <span aria-hidden="true">·</span> Envío gratis desde $1,200 MXN{% endif %}</div>
     <header class="site-header">
         <a class="brand" href="{{ url_for('index') }}" aria-label="Raíz, inicio">
             <svg class="brand-mark" viewBox="0 0 34 34" aria-hidden="true"><path d="M17 29V16M17 20C8.5 20 5 15.5 5 7c8.5 0 13 3.5 13 12M17 15c0-7 4-11 12-11 0 8-4 12-12 12" /></svg>
@@ -28,7 +28,7 @@
             <a class="header-cta" href="{{ url_for('cart') }}" aria-label="Carrito, {{ cart_count }} productos">Carrito <span class="cart-count">{{ cart_count }}</span></a>
             {% if current_user.is_authenticated %}
                 <a class="account-link" href="{{ url_for('my_plants') }}">{{ current_user.username }}</a>
-                <form action="{{ url_for('logout') }}" method="post"><button class="plain-button" type="submit">Salir</button></form>
+                <form action="{{ url_for('logout') }}" method="post"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><button class="plain-button" type="submit">Salir</button></form>
             {% else %}
                 <a class="account-link" href="{{ url_for('login') }}">Entrar</a>
             {% endif %}

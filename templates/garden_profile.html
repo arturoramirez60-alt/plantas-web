@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="page-main narrow-page">
+    <section class="page-heading compact-heading">
+        <p class="eyebrow"><span class="eyebrow-line"></span> {% if garden.is_demo %}Perfil ficticio · DEMO{% else %}Comunidad Raíz{% endif %}</p>
+        <h1>{{ garden.name }}</h1>
+        <p>{{ garden.city }} · {{ garden.approximate_zone }} · {{ garden.alias }}</p>
+    </section>
+    <article class="garden-profile">
+        {% if garden.photo_path %}<img class="garden-profile-photo" src="{{ url_for('static', filename=garden.photo_path) }}" alt="Fotografía de {{ garden.name }}">{% endif %}
+        <p>{{ garden.description }}</p>
+        <h2>Lo que cultiva</h2>
+        <ul class="garden-plant-list">{% for relation in garden.plants %}<li>{{ relation.plant.name }} <small>{{ relation.plant.category }}{% if relation.approximate_quantity %} · {{ relation.approximate_quantity }}{% endif %}</small></li>{% endfor %}</ul>
+        <div class="sharing-tags">
+            {% if garden.share_seeds %}<span>Comparte semillas</span>{% endif %}
+            {% if garden.share_cuttings %}<span>Comparte esquejes</span>{% endif %}
+            {% if garden.share_advice %}<span>Comparte consejos</span>{% endif %}
+            {% if not garden.share_seeds and not garden.share_cuttings and not garden.share_advice %}<span>Por ahora no comparte intercambios</span>{% endif %}
+        </div>
+        {% if current_user.is_authenticated and current_user.id == garden.owner_id %}
+        <form class="visibility-form" action="{{ url_for('toggle_garden_visibility', garden_id=garden.id) }}" method="post">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <label class="checkbox-label"><input type="checkbox" name="visible_map" value="yes" {% if garden.visible_map %}checked{% endif %}><span>Mostrar este huerto en el mapa</span></label>
+            <button class="button button-dark" type="submit">Guardar visibilidad</button>
+        </form>
+        {% endif %}
+    </article>
+    <a class="text-link profile-back" href="{{ url_for('community_map') }}">Volver al mapa <span aria-hidden="true">↗</span></a>
+</main>
+{% endblock %}

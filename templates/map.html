@@ -1,8 +1,55 @@
 {% extends "base.html" %}
-{% block head_extra %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" defer></script>
+{% endblock %}
 {% block content %}
 <main class="page-main map-page">
-    <section class="page-heading"><p class="eyebrow"><span class="eyebrow-line"></span> Crecemos en compañía</p><h1>Huertos cerca de ti.</h1><p>Conoce a quienes cultivan en tu comunidad y descubre qué está creciendo.</p></section>
-    <div class="map-layout"><div id="community-map" class="community-map" data-community-url="{{ url_for('community_data') }}" role="application" aria-label="Mapa de la comunidad Raíz"></div><aside class="map-sidebar"><div><span class="map-kicker">RED DE CULTIVO</span><h2>La ciudad también puede echar raíces.</h2><p>Los marcadores muestran miembros que decidieron compartir su ubicación y sus cultivos.</p></div><p class="map-count" data-community-count>Cargando comunidad…</p><a class="text-link" href="{{ url_for('register') }}">Comparte tu huerto <span aria-hidden="true">↗</span></a></aside></div>
+    <section class="page-heading">
+        <p class="eyebrow"><span class="eyebrow-line"></span> Crecemos en compañía</p>
+        <h1>Una comunidad que crece junta.</h1>
+        <p>Descubre los huertos que están creciendo cerca de ti. Comparte tus conocimientos, intercambia semillas y aprende de otros amantes del cultivo en casa.</p>
+    </section>
+    <section class="community-tools" aria-label="Buscar huertos">
+        <label>Planta<input type="search" data-community-filter="plant" placeholder="Busca por nombre de planta" maxlength="80"></label>
+        <label>Categoría
+            <select data-community-filter="category">
+                <option value="">Todas las plantas</option>
+                {% for category in plant_categories %}<option value="{{ category }}">{{ category }}</option>{% endfor %}
+            </select>
+        </label>
+        <label>Tipo de huerto
+            <select data-community-filter="type">
+                <option value="">Todos los espacios</option>
+                {% for kind in garden_types %}<option value="{{ kind }}">{{ garden_type_labels[kind] }}</option>{% endfor %}
+            </select>
+        </label>
+        <label>Ciudad y zona
+            <select data-community-filter="place">
+                <option value="">Todas las ubicaciones</option>
+                {% for place in places %}<option value="{{ place }}">{{ place }}</option>{% endfor %}
+            </select>
+        </label>
+        <label class="community-check"><input type="checkbox" data-community-filter="seeds"> Comparte semillas</label>
+        <label class="community-check"><input type="checkbox" data-community-filter="cuttings"> Comparte esquejes</label>
+    </section>
+    <div class="map-layout">
+        <div id="community-map" class="community-map"
+             data-community-url="{{ url_for('community_data') }}"
+             role="application" aria-label="Mapa aproximado de huertos de la comunidad Raíz"></div>
+        <aside class="map-sidebar">
+            <div>
+                <span class="map-kicker">RED DE CULTIVO</span>
+                <h2>La ciudad también puede echar raíces.</h2>
+                <p>El mapa usa ubicaciones aproximadas por ciudad y zona; nunca muestra domicilios ni coordenadas precisas.</p>
+                <p class="demo-map-note">Los perfiles marcados como DEMO son ficticios y sirven para probar el mapa.</p>
+            </div>
+            <p class="map-count" data-community-count aria-live="polite">Cargando comunidad…</p>
+            <a class="text-link" href="{{ url_for('new_garden') }}">Registra tu huerto <span aria-hidden="true">↗</span></a>
+        </aside>
+    </div>
 </main>
 {% endblock %}

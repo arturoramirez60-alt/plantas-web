@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="page-main narrow-page">
+    <section class="page-heading compact-heading">
+        <p class="eyebrow"><span class="eyebrow-line"></span> Comunidad Raíz</p>
+        <h1>Registra tu huerto.</h1>
+        <p>Comparte lo que cultivas. Solo publicaremos la información que elijas y una ubicación aproximada de ciudad.</p>
+    </section>
+    <form class="stacked-form garden-form" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <label>Nombre del huerto<input name="name" minlength="2" maxlength="120" required></label>
+        <label>Nombre público o alias<input name="alias" minlength="2" maxlength="80" value="{{ current_user.username }}" required></label>
+        <label>Descripción<textarea name="description" minlength="10" maxlength="500" rows="4" required></textarea></label>
+        <div class="location-fields">
+            <label>Ciudad<input name="city" minlength="2" maxlength="120" autocomplete="address-level2" required></label>
+            <label>Colonia o zona aproximada<input name="approximate_zone" minlength="2" maxlength="120" placeholder="Ej. zona centro" required></label>
+        </div>
+        <label>Tipo de huerto
+            <select name="garden_type" required>
+                <option value="">Selecciona un tipo</option>
+                {% for kind in garden_types %}<option value="{{ kind }}">{{ garden_type_labels[kind] }}</option>{% endfor %}
+            </select>
+        </label>
+        <label>Plantas que cultivas <small>Separa los nombres con comas o saltos de línea (hasta 20).</small>
+            <textarea name="plants" rows="3" maxlength="2500" placeholder="Albahaca, jitomate, menta" required></textarea>
+        </label>
+        <div class="location-fields">
+            <label>Categoría principal
+                <select name="plant_category" required>
+                    {% for category in plant_categories %}<option value="{{ category }}">{{ category }}</option>{% endfor %}
+                </select>
+            </label>
+            <label>Cantidad aproximada por planta<input name="approximate_quantity" maxlength="40" placeholder="Ej. 2 macetas"></label>
+        </div>
+        <label>Fotografía opcional<input type="file" name="photo" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"><small>JPG, PNG o WebP; máximo 4 MB.</small></label>
+        <fieldset class="garden-options">
+            <legend>¿Qué te gustaría compartir?</legend>
+            <label class="checkbox-label"><input type="checkbox" name="share_seeds" value="yes"><span>Semillas</span></label>
+            <label class="checkbox-label"><input type="checkbox" name="share_cuttings" value="yes"><span>Esquejes</span></label>
+            <label class="checkbox-label"><input type="checkbox" name="share_advice" value="yes"><span>Consejos de cultivo</span></label>
+        </fieldset>
+        <fieldset class="garden-options">
+            <legend>Visibilidad</legend>
+            <label class="checkbox-label"><input type="checkbox" name="visible_map" value="yes"><span>Quiero que este huerto aparezca en el mapa comunitario. El marcador es aproximado y no indica mi domicilio.</span></label>
+        </fieldset>
+        <p class="form-help">Tu correo, teléfono y ubicación exacta nunca se publican. No escribas direcciones particulares en la descripción o la zona.</p>
+        <button class="button button-dark" type="submit">Guardar huerto <span aria-hidden="true">↗</span></button>
+    </form>
+</main>
+{% endblock %}

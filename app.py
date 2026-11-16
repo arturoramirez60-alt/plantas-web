@@ -1,23 +1,30 @@
 import json
+import hmac
 import os
 import re
+import secrets
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlparse
 
-from flask import Flask, abort, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import Flask, abort, flash, redirect, render_template, request, session, url_for
 from flask_login import LoginManager, UserMixin, current_user, login_required, login_user, logout_user
-from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from community import Garden, GardenPlant, Plant, approximate_coordinates, register_community_routes
+from extensions import db
 
 BASE_DIR = Path(__file__).resolve().parent
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-only-change-this-secret")
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + str(BASE_DIR / "database.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+    "DATABASE_URL", "sqlite:///" + str(BASE_DIR / "database.db")
+)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024
+DEMO_MODE = os.environ.get("DEMO_MODE", "1").lower() not in {"0", "false", "no"}
 
-db = SQLAlchemy(app)
+db.init_app(app)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 login_manager.login_message = "Inicia sesión para continuar."
@@ -133,8 +140,8 @@ def catalog_payload(seeds):
             "category": seed.category,
             "pot_size": seed.pot_size,
             "tools": seed.tools,
-            "price": seed.price,
-            "prices": {kind: kit_breakdown(seed, kind)["price"] for kind in KIT_TYPES},
+            "price": effective_price(seed.price),
+            "prices": {kind: effective_price(kit_breakdown(seed, kind)["price"]) for kind in KIT_TYPES},
             "contents": {kind: kit_breakdown(seed, kind)["items"] for kind in KIT_TYPES},
         }
         for seed in seeds
@@ -163,11 +170,16 @@ def cart_details():
         seed = db.session.get(Seed, item["seed_id"])
         if seed is None:
             continue
-        kit = kit_breakdown(seed, item["kit_type"])
+        kit = dict(kit_breakdown(seed, item["kit_type"]))
+        kit["price"] = effective_price(kit["price"])
         line_total = kit["price"] * item["quantity"]
         details.append({"seed": seed, "kit_type": item["kit_type"], "kit": kit, "quantity": item["quantity"], "line_total": line_total})
         total += line_total
     return details, total
+
+
+def effective_price(price):
+    return 0 if DEMO_MODE else price
 
 
 def safe_local_redirect(target, fallback):
@@ -185,7 +197,28 @@ def inject_cart_count():
         "kit_labels": KIT_LABELS,
         "kit_types": KIT_TYPES,
         "kit_breakdown": kit_breakdown,
+        "demo_mode": DEMO_MODE,
     }
+
+
+@app.context_processor
+def inject_csrf_token():
+    def csrf_token():
+        token = session.get("_csrf_token")
+        if token is None:
+            token = secrets.token_urlsafe(32)
+            session["_csrf_token"] = token
+        return token
+    return {"csrf_token": csrf_token}
+
+
+@app.before_request
+def protect_post_requests():
+    if request.method == "POST":
+        expected = session.get("_csrf_token", "")
+        supplied = request.form.get("_csrf_token", "")
+        if not expected or not supplied or not hmac.compare_digest(expected, supplied):
+            abort(400, description="Token de formulario inválido. Recarga la página e inténtalo de nuevo.")
 
 
 @app.route("/")
@@ -279,34 +312,8 @@ def my_plants():
         OrderItem.query.join(Order).filter(Order.user_id == current_user.id)
         .order_by(Order.created_at.desc(), OrderItem.id.desc()).all()
     )
-    return render_template("my_plants.html", title="Mis plantas | Raíz", items=purchased)
-
-
-@app.route("/map")
-def community_map():
-    return render_template("map.html", title="Comunidad | Raíz")
-
-
-@app.get("/api/community-data")
-def community_data():
-    users = User.query.filter(
-        User.community_opt_in.is_(True), User.lat.isnot(None), User.lng.isnot(None)
-    ).all()
-    data = []
-    for user in users:
-        plants = (
-            db.session.query(Seed.name).join(OrderItem).join(Order)
-            .filter(Order.user_id == user.id).distinct().all()
-        )
-        data.append({
-            "lat": user.lat,
-            "lng": user.lng,
-            "username": user.username,
-            "city": user.city,
-            "plants": [row[0] for row in plants],
-            "contact": user.email,
-        })
-    return jsonify(data)
+    gardens = Garden.query.filter_by(owner_id=current_user.id).order_by(Garden.created_at.desc()).all()
+    return render_template("my_plants.html", title="Mis plantas | Raíz", items=purchased, gardens=gardens)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -334,20 +341,12 @@ def register():
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
         city = request.form.get("city", "").strip()
-        try:
-            lat = float(request.form["lat"]) if request.form.get("lat", "").strip() else None
-            lng = float(request.form["lng"]) if request.form.get("lng", "").strip() else None
-        except ValueError:
-            lat, lng = None, None
         if len(username) < 3 or "@" not in email or len(password) < 8:
             flash("Usa un nombre de al menos 3 caracteres, un correo válido y una contraseña de 8 caracteres.", "error")
         elif User.query.filter(db.or_(User.username == username, User.email == email)).first():
             flash("Ese nombre o correo ya está registrado.", "error")
-        elif (lat is None) != (lng is None) or (lat is not None and not (-90 <= lat <= 90 and -180 <= lng <= 180)):
-            flash("La ubicación debe incluir coordenadas válidas de latitud y longitud.", "error")
         else:
-            user = User(username=username, email=email, city=city, lat=lat, lng=lng,
-                        community_opt_in=bool(request.form.get("community_opt_in")))
+            user = User(username=username, email=email, city=city)
             user.set_password(password)
             db.session.add(user)
             db.session.commit()
@@ -363,6 +362,9 @@ def logout():
     logout_user()
     flash("Has cerrado sesión.", "info")
     return redirect(url_for("index"))
+
+
+register_community_routes(app)
 
 
 def initialize_database():
@@ -408,6 +410,39 @@ def initialize_database():
                                                  unit_price=kit_breakdown(seed, "starter")["price"]))
                 db.session.add(order)
         db.session.commit()
+        if Garden.query.count() == 0:
+            garden_demos = [
+                ("El cantero de Sofía (DEMO)", "Sofía · perfil ficticio", "Hortalizas de temporada en macetas; datos ficticios para probar el mapa.", "Ciudad de México", "Zona centro (aproximada)", "balcon", "Jitomate Cherry, Lechuga", "Hortaliza", True, False, True),
+                ("Hierbas de Mateo (DEMO)", "Mateo · perfil ficticio", "Un pequeño espacio de aromáticas para cocinar y compartir esquejes.", "Guadalajara", "Zona centro (aproximada)", "terraza", "Albahaca, Menta", "Aromática", True, True, True),
+                ("Frutitas de Lucía (DEMO)", "Lucía · perfil ficticio", "Frutales en contenedor y notas para cuidarlos en espacios pequeños.", "Ciudad de México", "Zona sur (aproximada)", "exterior", "Fresa, Limón", "Fruta", False, True, True),
+                ("Selva de ventana (DEMO)", "Sofía · perfil ficticio", "Plantas ornamentales resistentes y propagación en agua.", "Ciudad de México", "Zona norte (aproximada)", "interior", "Poto, Monstera", "Ornamental", False, True, False),
+            ]
+            for name, alias, description, city, zone, kind, plant_list, category, seeds, cuttings, advice in garden_demos:
+                owner = User.query.filter_by(username=alias.split(" ·", 1)[0]).first()
+                garden = Garden(
+                    owner_id=owner.id,
+                    name=name,
+                    alias=alias,
+                    description=description,
+                    city=city,
+                    approximate_zone=zone,
+                    garden_type=kind,
+                    share_seeds=seeds,
+                    share_cuttings=cuttings,
+                    share_advice=advice,
+                    visible_map=True,
+                    is_demo=True,
+                )
+                garden.public_lat, garden.public_lng = approximate_coordinates(city, name)
+                db.session.add(garden)
+                for plant_name in plant_list.split(", "):
+                    plant = Plant.query.filter_by(name=plant_name).first()
+                    if plant is None:
+                        plant = Plant(name=plant_name, category=category)
+                        db.session.add(plant)
+                        db.session.flush()
+                    garden.plants.append(GardenPlant(plant=plant, approximate_quantity="Varias macetas"))
+            db.session.commit()
 
 
 initialize_database()
