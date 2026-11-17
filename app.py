@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlparse
 
-from flask import Flask, abort, flash, redirect, render_template, request, session, url_for
+from flask import Flask, abort, flash, redirect, render_template, request, send_from_directory, session, url_for
 from flask_login import LoginManager, UserMixin, current_user, login_required, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -35,6 +35,33 @@ KIT_LABELS = {
     "starter": "Kit Inicio",
     "refill": "Kit Recarga",
     "seed_only": "Solo Semillas",
+}
+PRODUCT_IMAGES = {
+    "Jitomate Cherry": {
+        "refill": "01_Kit_Tomate_Cherry_Estudio.png",
+        "starter": "02_Kit_Tomate_Cherry_Pala_y_Guantes.png",
+        "seed_only": "03_Sobre_Tomate_Cherry_Frontal.png",
+    },
+    "Albahaca": {
+        "refill": "04_Kit_Albahaca_Estudio.png",
+        "starter": "05_Kit_Albahaca_Pala_y_Guantes.png",
+        "seed_only": "06_Sobre_Albahaca_Frontal.png",
+    },
+    "Manzanilla": {
+        "refill": "07_Kit_Manzanilla_Estudio.png",
+        "starter": "08_Kit_Manzanilla_Pala_y_Guantes.png",
+        "seed_only": "09_Sobre_Manzanilla_Frontal.png",
+    },
+    "Lechuga": {
+        "refill": "10_Kit_Lechuga_Estudio.png",
+        "starter": "11_Kit_Lechuga_Pala_y_Guantes.png",
+        "seed_only": "12_Sobre_Lechuga_Frontal.png",
+    },
+    "Chile Serrano": {
+        "refill": "13_Kit_Chile_Serrano_Estudio.png",
+        "starter": "14_Kit_Chile_Serrano_Pala_y_Guantes.png",
+        "seed_only": "15_Sobre_Chile_Serrano_Frontal.png",
+    },
 }
 SOIL_PRICE = 85
 FERTILIZER_PRICE = 55
@@ -230,7 +257,18 @@ def index():
 @app.route("/catalog")
 def catalog():
     seeds = Seed.query.order_by(Seed.id).all()
-    return render_template("catalog.html", title="Catálogo | Raíz", seeds=seeds, seed_data=catalog_payload(seeds))
+    return render_template(
+        "catalog.html",
+        title="Catálogo | Raíz",
+        seeds=seeds,
+        seed_data=catalog_payload(seeds),
+        product_images=PRODUCT_IMAGES,
+    )
+
+
+@app.route("/imagenes/<path:filename>")
+def product_image(filename):
+    return send_from_directory(BASE_DIR / "imagenes", filename)
 
 
 @app.post("/cart/add")

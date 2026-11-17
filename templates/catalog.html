@@ -17,17 +17,20 @@
         {% for kind in kit_types %}
         {% set kit = kit_breakdown(seed, kind) %}
         <article class="catalog-card" data-catalog-item data-kind="{{ kind }}">
-            <div class="catalog-card-top"><span class="seed-category">{{ seed.category }}</span><span class="seed-pot">{{ seed.pot_size }}</span></div>
-            <p class="product-meta">SEMILLA {{ "%02d"|format(seed.id) }} / {{ seed.category|upper }}</p>
-            <h2>{{ seed.name }}</h2>
-            <p class="catalog-description">{{ kit["items"]|join(" · ") }}</p>
-            <ul class="kit-includes">{% for include in kit["items"] %}<li>{{ include }}</li>{% endfor %}</ul>
-            <div class="catalog-card-bottom">
-                <div><span class="kind-label">{{ kit["label"] }}</span><strong class="price">{% if demo_mode %}Gratis{% else %}${{ "{:,}".format(kit["price"]) }} <small>MXN</small>{% endif %}</strong></div>
-                <form action="{{ url_for('add_to_cart') }}" method="post">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="seed_id" value="{{ seed.id }}"><input type="hidden" name="kit_type" value="{{ kind }}"><input type="hidden" name="next" value="{{ url_for('catalog') }}">
-                    <button class="button button-dark" type="submit">Añadir <span aria-hidden="true">+</span></button>
-                </form>
+            <img class="catalog-card-image" src="{{ url_for('product_image', filename=product_images[seed.name][kind]) }}" alt="{{ seed.name }} — {{ kit['label'] }} con {{ kit['items']|join(', ') }}" loading="lazy" decoding="async">
+            <div class="catalog-card-content">
+                <div class="catalog-card-top"><span class="seed-category">{{ seed.category }}</span><span class="seed-pot">{{ seed.pot_size }}</span></div>
+                <p class="product-meta">SEMILLA {{ "%02d"|format(seed.id) }} / {{ seed.category|upper }}</p>
+                <h2>{{ seed.name }}</h2>
+                <p class="catalog-description">{{ kit["items"]|join(" · ") }}</p>
+                <ul class="kit-includes">{% for include in kit["items"] %}<li>{{ include }}</li>{% endfor %}</ul>
+                <div class="catalog-card-bottom">
+                    <div><span class="kind-label">{{ kit["label"] }}</span><strong class="price">{% if demo_mode %}Gratis{% else %}${{ "{:,}".format(kit["price"]) }} <small>MXN</small>{% endif %}</strong></div>
+                    <form action="{{ url_for('add_to_cart') }}" method="post">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="seed_id" value="{{ seed.id }}"><input type="hidden" name="kit_type" value="{{ kind }}"><input type="hidden" name="next" value="{{ url_for('catalog') }}">
+                        <button class="button button-dark" type="submit">Añadir <span aria-hidden="true">+</span></button>
+                    </form>
+                </div>
             </div>
         </article>
         {% endfor %}
