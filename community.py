@@ -222,6 +222,13 @@ def register_community_routes(app):
     @app.route("/community/gardens/new", methods=["GET", "POST"])
     @login_required
     def new_garden():
+        purchased_seeds = {
+            item.seed_id: item.seed
+            for order in current_user.orders
+            for item in order.items
+            if item.seed is not None
+        }
+        selected_seed_ids = []
         if request.method == "POST":
             name = request.form.get("name", "").strip()
             alias = request.form.get("alias", "").strip()
@@ -229,11 +236,11 @@ def register_community_routes(app):
             city = request.form.get("city", "").strip()
             zone = request.form.get("approximate_zone", "").strip()
             garden_type = request.form.get("garden_type", "").strip()
-            plant_names = [
-                item.strip() for item in re.split(r"[,\n]+", request.form.get("plants", ""))
-                if item.strip()
-            ]
-            plant_category = request.form.get("plant_category", "").strip()
+            submitted_seed_ids = request.form.getlist("plants")
+            try:
+                selected_seed_ids = list(dict.fromkeys(int(seed_id) for seed_id in submitted_seed_ids))
+            except ValueError:
+                selected_seed_ids = []
             quantity = request.form.get("approximate_quantity", "").strip()
             visible = submitted_checkbox("visible_map")
 
@@ -246,12 +253,12 @@ def register_community_routes(app):
                 validation_error = "Los datos públicos no pueden incluir correos, teléfonos ni detalles de domicilios."
             elif garden_type not in GARDEN_TYPES:
                 validation_error = "Selecciona un tipo de huerto válido."
-            elif not plant_names or len(plant_names) > 20 or any(
-                len(item) > 120 or PRIVATE_DETAIL_PATTERN.search(item) for item in plant_names
-            ):
-                validation_error = "Agrega de 1 a 20 plantas; cada nombre debe tener hasta 120 caracteres."
-            elif plant_category not in PLANT_CATEGORIES:
-                validation_error = "Selecciona una categoría de plantas válida."
+            elif not purchased_seeds:
+                validation_error = "Necesitas comprar al menos una semilla del catálogo antes de registrar un huerto."
+            elif len(submitted_seed_ids) != len(selected_seed_ids) or not selected_seed_ids:
+                validation_error = "Selecciona al menos una planta del catálogo que hayas comprado."
+            elif len(selected_seed_ids) > 20 or any(seed_id not in purchased_seeds for seed_id in selected_seed_ids):
+                validation_error = "Solo puedes agregar plantas del catálogo que hayas comprado."
             elif len(quantity) > 40:
                 validation_error = "La cantidad aproximada no puede exceder 40 caracteres."
             elif visible and CITY_CENTERS.get(normalized_place(city)) is None:
@@ -287,10 +294,11 @@ def register_community_routes(app):
                     )
                 db.session.add(garden)
                 db.session.flush()
-                for plant_name in dict.fromkeys(plant_names):
-                    plant = Plant.query.filter(db.func.lower(Plant.name) == plant_name.lower()).first()
+                for seed_id in selected_seed_ids:
+                    seed = purchased_seeds[seed_id]
+                    plant = Plant.query.filter(db.func.lower(Plant.name) == seed.name.lower()).first()
                     if plant is None:
-                        plant = Plant(name=plant_name, category=plant_category)
+                        plant = Plant(name=seed.name, category=seed.category)
                         db.session.add(plant)
                         db.session.flush()
                     garden.plants.append(GardenPlant(plant=plant, approximate_quantity=quantity))
@@ -308,7 +316,8 @@ def register_community_routes(app):
                 "terraza": "Terraza",
                 "otro": "Otro",
             },
-            plant_categories=PLANT_CATEGORIES,
+            purchased_seeds=sorted(purchased_seeds.values(), key=lambda seed: seed.name.casefold()),
+            selected_seed_ids=selected_seed_ids,
         )
 
     @app.get("/community/gardens/<int:garden_id>")

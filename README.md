@@ -1,6 +1,6 @@
 # Raíz
 
-Tienda y comunidad para huertos urbanos, construida con Flask, Flask-SQLAlchemy, Flask-Login, Jinja2, CSS, JavaScript nativo y Leaflet.
+Tienda y comunidad para huertos urbanos, construida con Flask, Flask-SQLAlchemy, Flask-Login, Jinja2, CSS, JavaScript y Leaflet.
 
 ## Ejecutar
 
@@ -26,7 +26,7 @@ Las tres cuentas comparten la contraseña `raizdemo`:
 - Carrito guardado en la sesión y checkout que persiste pedidos para usuarios autenticados.
 - Guías por cultivo en “Mis plantas”, con pasos marcables que se guardan en el navegador.
 - Sesiones de usuario con Flask-Login, registro con contraseñas hash y pedidos persistidos en SQLite.
-- Comunidad con perfiles de huertos, plantas relacionadas, fotos opcionales, filtros AJAX y mapa Leaflet/OpenStreetMap con marcadores agrupados.
+- Comunidad con perfiles de huertos, plantas relacionadas, fotos opcionales, filtros AJAX y un mapa 2D de México con Leaflet.
 - Los huertos solo aparecen con consentimiento; el mapa publica ubicaciones aproximadas generadas por ciudad y nunca expone correos, teléfonos o coordenadas introducidas por usuarios.
 - Los formularios POST incluyen token CSRF. Las fotos se limitan a JPG, PNG o WebP de hasta 4 MB y se almacenan bajo `static/uploads/gardens/`.
 
@@ -36,7 +36,7 @@ El catálogo conserva los precios de referencia en la base, pero en modo de prue
 
 1. Inicia sesión con cualquiera de las cuentas demo y la contraseña `raizdemo`.
 2. Abre **Comunidad** y prueba los perfiles ficticios, filtros por planta, categoría, espacio, zona y disponibilidad.
-3. Usa **Registra tu huerto** para guardar uno asociado a tu cuenta. Puedes dejar desactivada su aparición en el mapa y cambiar la visibilidad desde **Mis plantas**.
+3. Usa **Registra tu huerto** para guardar uno asociado a tu cuenta. Debes tener una compra registrada y solo puedes seleccionar semillas del catálogo que hayas comprado. Puedes dejar desactivada su aparición en el mapa y cambiar la visibilidad desde **Mis plantas**.
 4. Las ubicaciones públicas se aproximan a partir de la ciudad y la zona; solo las ciudades con centro aproximado configurado pueden publicarse por ahora.
 
-Leaflet, MarkerCluster y los mosaicos de OpenStreetMap se cargan desde sus CDN públicos. La capa de comunicación entre usuarios (mensajes, intercambio coordinado y notificaciones) queda para una fase posterior.
+El mapa de la comunidad permite explorar México con Leaflet y mosaicos de OpenStreetMap.de, sin requerir una API key. Muestra los huertos publicados con ubicaciones aproximadas. Leaflet se carga desde jsDelivr y los mosaicos desde OpenStreetMap.de, por lo que se requiere conexión a internet. La capa de comunicación entre usuarios (mensajes, intercambio coordinado y notificaciones) queda para una fase posterior.
