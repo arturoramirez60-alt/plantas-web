@@ -27,6 +27,7 @@ Las tres cuentas comparten la contraseña `raizdemo`:
 - Guías por cultivo en “Mis plantas”, con pasos marcables que se guardan en el navegador.
 - Sesiones de usuario con Flask-Login, registro con contraseñas hash y pedidos persistidos en SQLite.
 - Comunidad con perfiles de huertos, plantas relacionadas, fotos opcionales, filtros AJAX y un mapa 2D de México con Leaflet.
+- Comentarios públicos dentro de cada perfil de huerto, con inicio de sesión, límite de longitud y moderación por el autor o el dueño.
 - Los huertos solo aparecen con consentimiento; el mapa publica ubicaciones aproximadas generadas por ciudad y nunca expone correos, teléfonos o coordenadas introducidas por usuarios.
 - Los formularios POST incluyen token CSRF. Las fotos se limitan a JPG, PNG o WebP de hasta 4 MB y se almacenan bajo `static/uploads/gardens/`.
 

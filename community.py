@@ -79,6 +79,17 @@ class Garden(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     owner = db.relationship("User")
     plants = db.relationship("GardenPlant", back_populates="garden", cascade="all, delete-orphan")
+    comments = db.relationship("GardenComment", back_populates="garden", cascade="all, delete-orphan")
+
+
+class GardenComment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    garden_id = db.Column(db.Integer, db.ForeignKey("garden.id"), nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    content = db.Column(db.String(500), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    garden = db.relationship("Garden", back_populates="comments")
+    author = db.relationship("User")
 
 
 class GardenPlant(db.Model):
@@ -329,11 +340,51 @@ def register_community_routes(app):
             )
         ):
             abort(404)
+        comments = GardenComment.query.filter_by(garden_id=garden.id).order_by(GardenComment.created_at.desc()).all()
         return render_template(
             "garden_profile.html",
             title="{} | Comunidad Raíz".format(garden.name),
             garden=garden,
+            comments=comments,
         )
+
+    @app.post("/community/gardens/<int:garden_id>/comments")
+    @login_required
+    def add_garden_comment(garden_id):
+        garden = db.session.get(Garden, garden_id)
+        if garden is None or (
+            not garden.visible_map and current_user.id != garden.owner_id
+        ):
+            abort(404)
+
+        content = request.form.get("content", "").strip()
+        if not (2 <= len(content) <= 500):
+            flash("El comentario debe tener entre 2 y 500 caracteres.", "error")
+        elif PRIVATE_DETAIL_PATTERN.search(content):
+            flash("No compartas correos, teléfonos ni detalles de domicilios en los comentarios.", "error")
+        else:
+            db.session.add(GardenComment(
+                garden_id=garden.id,
+                author_id=current_user.id,
+                content=content,
+            ))
+            db.session.commit()
+            flash("Tu comentario quedó publicado.", "success")
+        return redirect(url_for("garden_profile", garden_id=garden.id))
+
+    @app.post("/community/gardens/<int:garden_id>/comments/<int:comment_id>/delete")
+    @login_required
+    def delete_garden_comment(garden_id, comment_id):
+        garden = db.session.get(Garden, garden_id)
+        comment = db.session.get(GardenComment, comment_id)
+        if garden is None or comment is None or comment.garden_id != garden.id:
+            abort(404)
+        if current_user.id != comment.author_id and current_user.id != garden.owner_id:
+            abort(403)
+        db.session.delete(comment)
+        db.session.commit()
+        flash("Comentario eliminado.", "success")
+        return redirect(url_for("garden_profile", garden_id=garden.id))
 
     @app.post("/community/gardens/<int:garden_id>/visibility")
     @login_required

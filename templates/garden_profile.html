@@ -25,6 +25,44 @@
         </form>
         {% endif %}
     </article>
+    <section class="garden-comments" aria-labelledby="garden-comments-title">
+        <div class="comments-heading">
+            <h2 id="garden-comments-title">Comentarios <span>{{ comments|length }}</span></h2>
+        </div>
+        {% if current_user.is_authenticated %}
+        <form class="comment-form" action="{{ url_for('add_garden_comment', garden_id=garden.id) }}" method="post">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <label for="garden-comment">Deja un comentario
+                <textarea id="garden-comment" name="content" minlength="2" maxlength="500" rows="4" required placeholder="Comparte una idea, pregunta o consejo sobre este huerto."></textarea>
+            </label>
+            <small>Los comentarios son públicos. No incluyas datos personales.</small>
+            <button class="button button-dark" type="submit">Publicar comentario</button>
+        </form>
+        {% else %}
+        <p class="comment-login">Inicia sesión para dejar un comentario. <a class="text-link" href="{{ url_for('login', next=request.path) }}">Entrar <span aria-hidden="true">↗</span></a></p>
+        {% endif %}
+        {% if comments %}
+        <ol class="comment-list">
+            {% for comment in comments %}
+            <li class="garden-comment">
+                <div class="comment-meta">
+                    <strong>{{ comment.author.username }}</strong>
+                    <time datetime="{{ comment.created_at.isoformat() }}">{{ comment.created_at.strftime('%d/%m/%Y · %H:%M') }}</time>
+                </div>
+                <p>{{ comment.content }}</p>
+                {% if current_user.is_authenticated and (current_user.id == comment.author_id or current_user.id == garden.owner_id) %}
+                <form action="{{ url_for('delete_garden_comment', garden_id=garden.id, comment_id=comment.id) }}" method="post">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <button class="comment-delete" type="submit" onclick="return confirm('¿Eliminar este comentario?');">Eliminar</button>
+                </form>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ol>
+        {% else %}
+        <p class="comments-empty">Aún no hay comentarios. Sé la primera persona en compartir una idea.</p>
+        {% endif %}
+    </section>
     <a class="text-link profile-back" href="{{ url_for('community_map') }}">Volver al mapa <span aria-hidden="true">↗</span></a>
 </main>
 {% endblock %}

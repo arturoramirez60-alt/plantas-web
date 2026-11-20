@@ -327,6 +327,24 @@ h2 { margin-bottom: 0; font-size: clamp(38px, 4vw, 54px); line-height: 1.05; let
 .visibility-form { display: flex; flex-wrap: wrap; align-items: center; gap: 17px; margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); }
 .visibility-form .checkbox-label { margin-right: auto; }
 .profile-back { margin-top: 22px; }
+.garden-comments { margin-top: 26px; padding: 25px; border: 1px solid var(--line); background: rgba(255,255,255,.24); }
+.comments-heading h2 { margin: 0 0 18px; font-size: 27px; }
+.comments-heading h2 span { color: var(--muted); font-family: "DM Sans", sans-serif; font-size: 11px; }
+.comment-form { display: grid; gap: 10px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+.comment-form label { display: grid; gap: 8px; color: #535f50; font-size: 10px; font-weight: 700; }
+.comment-form textarea { width: 100%; resize: vertical; padding: 10px 12px; border: 1px solid #c8cebd; background: #fbfaf4; color: var(--ink); font: 12px "DM Sans", sans-serif; line-height: 1.6; }
+.comment-form small { color: var(--muted); font-size: 9px; }
+.comment-form .button { justify-self: start; border: 0; cursor: pointer; }
+.comment-login { padding: 12px 0 20px; border-bottom: 1px solid var(--line); color: #535f50; font-size: 12px; }
+.comment-login .text-link { margin-left: 8px; }
+.comment-list { margin: 0; padding: 0; list-style: none; }
+.garden-comment { padding: 18px 0; border-bottom: 1px solid var(--line); }
+.garden-comment:last-child { border-bottom: 0; }
+.comment-meta { display: flex; justify-content: space-between; gap: 15px; color: #535f50; font-size: 11px; }
+.comment-meta time { color: var(--muted); font-size: 9px; }
+.garden-comment > p { margin: 8px 0 4px; white-space: pre-line; line-height: 1.7; }
+.comment-delete { padding: 0; border: 0; background: none; color: var(--clay); cursor: pointer; font: 600 9px "DM Sans", sans-serif; }
+.comments-empty { margin: 10px 0 0; color: var(--muted); font-size: 11px; }
 .garden-form { max-width: 720px; margin: 0 auto; padding: 28px; border: 1px solid var(--line); background: rgba(255,255,255,.24); }
 .garden-form textarea, .garden-form select, .garden-form input:not([type="checkbox"]) { width: 100%; min-width: 0; min-height: 42px; padding: 9px 11px; border: 1px solid #c8cebd; border-radius: 0; background: #fbfaf4; color: var(--ink); font: 12px "DM Sans", sans-serif; }
 .garden-form textarea { resize: vertical; }
