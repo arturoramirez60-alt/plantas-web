@@ -13,7 +13,13 @@
         {% for item in items %}
         <details class="plant-guide" data-guide="{{ item.id }}">
             <summary><span class="plant-number">{{ "%02d"|format(loop.index) }}</span><span class="plant-title"><strong>{{ item.seed.name }}</strong><small>{{ item.seed.category }} · {{ kit_labels[item.kit_type] }} · Pedido #{{ item.order.id }}</small></span><span class="plant-date">{{ item.order.created_at.strftime("%d/%m/%Y") }}</span><span class="summary-chevron" aria-hidden="true">+</span></summary>
-            <div class="plant-guide-content"><p>Maceta recomendada: {{ item.seed.pot_size }}. Sigue estos pasos de siembra, riego y cosecha:</p><ol>{% for step in item.seed.guide_steps %}<li><label><input type="checkbox" data-guide-step="{{ item.id }}-{{ loop.index }}"><span>{{ step }}</span></label></li>{% endfor %}</ol></div>
+            <div class="plant-guide-content">
+                <p>Maceta recomendada: {{ item.seed.pot_size }}. Sigue estos pasos de siembra, riego y cosecha:</p>
+                <ol>{% for step in item.seed.guide_steps %}<li><label><input type="checkbox" data-guide-step="{{ item.id }}-{{ loop.index }}"><span>{{ step }}</span></label></li>{% endfor %}</ol>
+                <a class="care-video-link" href="{{ item.seed.care_video_url }}" target="_blank" rel="noopener noreferrer">
+                    <span aria-hidden="true">▶</span> Ver videos de cuidado en YouTube
+                </a>
+            </div>
         </details>
         {% endfor %}
     </div>

@@ -25,6 +25,7 @@ Las tres cuentas comparten la contraseña `raizdemo`:
 - Catálogo filtrable y kits Inicio, Recarga y Solo Semillas con precios calculados por variedad.
 - Carrito guardado en la sesión y checkout que persiste pedidos para usuarios autenticados.
 - Guías por cultivo en “Mis plantas”, con pasos marcables que se guardan en el navegador.
+- Cada guía incluye un enlace a videos de YouTube relacionados con el cuidado de esa planta.
 - Sesiones de usuario con Flask-Login, registro con contraseñas hash y pedidos persistidos en SQLite.
 - Comunidad con perfiles de huertos, plantas relacionadas, fotos opcionales, filtros AJAX y un mapa 2D de México con Leaflet.
 - Comentarios públicos dentro de cada perfil de huerto, con inicio de sesión, límite de longitud y moderación por el autor o el dueño.

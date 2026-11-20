@@ -284,6 +284,9 @@ h2 { margin-bottom: 0; font-size: clamp(38px, 4vw, 54px); line-height: 1.05; let
 .plant-guide-content li label { display: flex; align-items: flex-start; gap: 10px; line-height: 1.6; cursor: pointer; }
 .plant-guide-content input, .checkbox-label input { accent-color: var(--leaf); }
 .plant-guide-content input:checked + span { color: #83897c; text-decoration: line-through; }
+.care-video-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; padding: 9px 12px; border: 1px solid #c8cebd; color: var(--forest); font-size: 10px; font-weight: 700; }
+.care-video-link span { color: var(--clay); }
+.care-video-link:hover { border-color: var(--leaf); background: #e8e9dc; }
 .map-page { width: min(1280px, 90%); }
 .map-layout { display: grid; grid-template-columns: minmax(0,1fr) 300px; min-height: 500px; border: 1px solid var(--line); }
 .community-map { position: relative; min-height: 500px; overflow: hidden; background: #dce4d8; }

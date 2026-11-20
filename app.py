@@ -5,7 +5,7 @@ import re
 import secrets
 from datetime import datetime
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import quote_plus, urlparse
 
 from flask import Flask, abort, flash, redirect, render_template, request, send_from_directory, session, url_for
 from flask_login import LoginManager, UserMixin, current_user, login_required, login_user, logout_user
@@ -63,6 +63,16 @@ PRODUCT_IMAGES = {
         "seed_only": "15_Sobre_Chile_Serrano_Frontal.png",
     },
 }
+CARE_VIDEO_QUERIES = {
+    "Jitomate Cherry": "como cuidar jitomate cherry maceta",
+    "Albahaca": "como cuidar albahaca maceta",
+    "Manzanilla": "como cuidar manzanilla maceta",
+    "Lechuga": "como cultivar lechuga maceta",
+    "Chile Serrano": "como cuidar chile serrano maceta",
+    "Menta": "como cuidar menta maceta",
+    "Fresa": "como cuidar fresas maceta",
+    "Limón": "como cuidar limonero maceta",
+}
 SOIL_PRICE = 85
 FERTILIZER_PRICE = 55
 TOOLS_PRICE = 120
@@ -105,6 +115,11 @@ class Seed(db.Model):
     @property
     def guide_steps(self):
         return [line.strip() for line in self.care_guide.splitlines() if line.strip()]
+
+    @property
+    def care_video_url(self):
+        query = CARE_VIDEO_QUERIES.get(self.name, "como cuidar plantas en maceta {}".format(self.name))
+        return "https://www.youtube.com/results?search_query={}".format(quote_plus(query))
 
 
 class Order(db.Model):
